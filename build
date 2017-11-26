@@ -1,0 +1,79 @@
+#!/bin/sh
+
+# build ports with poudriere
+#
+# Usage: build [-C] [-U]
+# -C if tmux is running locally, do not create new tmux window
+# -U do not update the ports tree before building
+#
+# globals expected in ${HOME}/.ports.conf with sample values
+# bhost='storage2.mathstat.dal.ca'  # build host
+# bjail='11amd64'   # build jail
+# listf='ports.txt' # list file of ports to build, relative to $HOME
+
+. "$HOME/.ports.conf"
+
+usage () {
+  [ -n "$*" ] && printf "%s\\n" "$*" 1>&2
+  cat <<EOF 1>&2
+Usage: ${0##*/} [-C][-U]
+EOF
+}
+
+build () {
+  if [ "$(hostname)" != "$bhost" ]; then
+    if pgrep -q tmux && [ "$newtw" != 'no' ]; then
+      tmux neww \; send "ssh $bhost" KPEnter "build $nu" KPEnter
+    else
+      ssh -t "$bhost" "build $nu"
+    fi
+  else
+    if ! command -v tmux >/dev/null 2>&1; then
+      printf "tmux is required on the build host.\\n"
+      exit 1
+    fi
+    if ! [ -f "${HOME}/$listf" ]; then
+      printf "The file, %s/%s, does not exist.\\n" "${HOME}" "$listf"
+      exit 1
+    elif ! [ -r "${HOME}/$listf" ]; then
+      printf "The file, %s/%s, is not readable.\\n" "${HOME}" "$listf"
+      exit 1
+    elif ! [ -s "${HOME}/$listf" ]; then
+      printf "Nothing new to build. The file, %s/%s, is empty.\\n" "${HOME}" \
+             "$listf"
+      return 0
+    else
+      if tmux ls 2>&1 | grep -q '^build:'; then
+        tmux neww -t '=build'
+      else
+        tmux new -d -s 'build'
+      fi
+      [ -z "$nu" ] && tmux send -t '=build:$' pull KPENTER
+      tmux send -t '=build:$' "sudo poudriere options -j $bjail -f $HOME/$listf \
+&& sudo poudriere bulk -j $bjail -f $HOME/$listf" KPEnter
+      tmux att -d -t '=build' > /dev/null 2>&1
+    fi
+  fi
+}
+
+############################################ main
+
+OPTIND=1
+while getopts ":CU" opt; do
+  case $opt in
+    C) newtw=no ;;
+    U) nu='-U' ;;
+    *) usage "Invalid option: -$OPTARG."
+       exit 1
+       ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if ! command -v tmux >/dev/null 2>&1 && [ "$newtw" != 'no' ]; then
+  printf "tmux is required locally unless -C is specified.\\n"
+  exit 1
+fi
+
+[ $# != 0 ] && { usage; exit 1; }
+build

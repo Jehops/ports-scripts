@@ -1,0 +1,51 @@
+#!/bin/sh
+
+# g_it d_iff p_atch s_vn
+# Create a git diff of the current branch against the master branch and use it
+# to patch an svn tree.
+#
+# Usage: gdps
+#
+# globals expected in ${HOME}/.ports.conf with sample values
+# no leading '/' means relative to $HOME
+# diffsd='diffs'                # diffs directory
+# portsd='/usr/ports'           # ports directory
+# svnd='scm/freebsd/ports/head' # svn ports directory
+
+# TODO:
+# - Add option to control whether `git rebase master` is run
+# - Add option to control whether `git push --force` is run
+# - When these two commands are run, check whether they are successful before
+#   proceeding
+
+. "$HOME/.ports.conf"
+
+usage() {
+  cat <<EOF 1>&2
+Usage: ${0##*/}
+EOF
+}
+
+############################################ main
+
+[ $# != 0 ] && { usage; exit 1; }
+
+[ -n "${diffsd##/*}" ] && diffsd="${HOME}/$diffsd"
+[ -n "${portsd##/*}" ] && portsd="${HOME}/$portsd"
+[ -n "${svnd##/*}" ] && svnd="${HOME}/$svnd"
+
+cb="$(git -C "$portsd" symbolic-ref --short HEAD)"
+
+if [ -z "$cb" ]; then
+  printf "Could not determine the checked out git branch.\\n"
+  exit 1
+elif [ "$cb" = "master" ]; then
+  printf "Refusing to proceed because the master branch is checked out.\\n"
+  exit 1
+fi
+
+df="${diffsd}/${cb}.diff"
+git -C "$portsd" rebase master
+push -f
+git -C "$portsd" diff master > "$df"
+patch -p1 -i "$df" -d "$svnd"

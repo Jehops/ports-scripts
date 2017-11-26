@@ -1,0 +1,50 @@
+#!/bin/sh
+
+# send of list of ports to update to a build host
+#
+# Usage: stage [-a]
+# -a: append to the list on the build server rather than overwriting
+#
+# globals expected in ${HOME}/.ports.conf with sample values
+# bhost='storage2.mathstat.dal.ca'  # build host
+# listf='ports.txt' # list file of ports to build, relative to $HOME
+
+. "$HOME/.ports.conf"
+
+stage () {
+  if [ "$(hostname)" != "$bhost" ]; then
+    if [ -f "$listf" ] && [ -r "$listf" ]; then
+      if [ "$1" = 'yes' ]; then
+        printf "Appending the list of ports to %s:%s...\\n" "$bhost" "$listf"
+        ssh "$bhost" "cat >> $listf" < "$listf"
+        ret=$?
+      else
+        printf "Sending the list of ports to %s:%s...\\n" "$bhost" "$listf"
+        scp "$listf" "${bhost}:${listf}"
+        ret=$?
+      fi
+    else
+      printf "The file %s does not exist or is not readable.\\n" "$listf"
+      ret=1
+    fi
+  else
+    printf "Refusing to stage on the build host.\\n"
+    ret=1
+  fi
+
+  return "$ret"
+}
+
+############################################ main
+
+[ -n "${listf##/*}" ] && listf="${HOME}/$listf"
+
+appendp=no
+while getopts ":a" opt; do
+  case $opt in
+    a) appendp=yes ;;
+    *) printf "Invalid option: -%s\\n." "$opt" ;;
+  esac
+done
+
+stage "$appendp"

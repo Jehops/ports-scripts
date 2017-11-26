@@ -1,0 +1,78 @@
+#!/bin/sh
+
+# push local ports tree changes
+#
+# Usage: push.sh [-f]
+#
+# -f: force push (use 'git push --force')
+#
+# globals expected in ${HOME}/.ports.conf with sample values
+# No leading '/' on directory names means they are relative to $HOME
+# portsd='/usr/ports'           # ports directory
+# pullm=gsr                     # pull method
+
+. "$HOME/.ports.conf"
+
+# push predicate
+pushp() {
+
+  local ret=-1
+
+  if [ "$pullm" != 'gsr' ]; then
+    printf "Pull method is not 'git svn rebase.  Refusing to push.\\n'".
+    ret=1
+  else
+    case $askpushp in
+      [Nn][Oo]|0)
+        ret=0
+        ;;
+      *)
+        while read -rp "Push changes (y/n)? " cont; do
+          case $cont in
+	    [Yy]|[Yy][Ee][Ss])
+              ret=0
+              break
+              ;;
+            [Nn]|[Nn][Oo])
+              ret=1
+              break
+              ;;
+	    *)
+              continue
+              ;;
+          esac
+        done
+    esac
+  fi
+
+  return "$ret"
+}
+
+# push changes
+push() {
+  case $pushp in
+    [Yy]|[Yy][Ee][Ss]|1)
+      if pushp; then
+        printf "Pushing changes...\\n"
+        if [ "$forcep" = 'yes' ]; then
+          git -C "${portsd}" push --force
+        else
+          git -C "${portsd}" push
+        fi
+      fi
+      ;;
+  esac
+}
+
+############################################ main
+
+OPTIND=1
+while getopts ":f" opt; do
+  case $opt in
+    f) forcep=yes ;;
+    *) printf "Ignoring invalid option: -%s.\\n" "$opt" ;;
+  esac
+done
+shift $((OPTIND-1))
+
+push

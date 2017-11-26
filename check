@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# check installed packages for updates
+#
+# Usage: check
+#
+# globals expected in ${HOME}/.ports.conf with sample values
+# listf='ports.txt' # ports list file; relative to $HOME if no leading '/'
+
+. "$HOME/.ports.conf"
+
+usage() {
+  cat <<EOF 1>&2
+Usage: ${0##*/}
+EOF
+}
+
+check() {
+  printf "Checking for installed packages with updated ports...\\n"
+  local updates=$(pkg version -vl'<')
+  if [ -n "$updates" ]; then
+    printf "%s\\n" "$updates"
+    local origins="$(pkg info -oq $(printf "%s\\n" "$updates" | cut -w -f1))"
+  fi
+  printf "%s\\n" "$origins" > "$listf"
+}
+
+############################################ main
+
+[ $# != 0 ] && { usage; exit 1; }
+[ -n "${listf##/*}" ] && listf="${HOME}/$listf"
+check

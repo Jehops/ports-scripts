@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# What would maintainer do?
+#
+# Usage: wwmd <MAINTAINER= regexp> <Makefile regexp> category/port
+#
+# The first argument is a regular expression to match after MAINTAINER=
+# The second argument is a regular expression to match in Makefiles
+#
+# Example: wwmd person@FreeBSD.org GH_
+
+. "$HOME/.ports.conf"
+
+usage () {
+  cat <<EOF 1>&2
+Usage: ${0##*/} <MAINTAINER= regexp> <Makefile regexp> category/port
+EOF
+}
+
+############################################ main
+
+[ $# != 2 ] && { usage; exit 1; }
+
+grep --color=auto --include="*/*/Makefile" -r "MAINTAINER=[[:space:]]*${1}" \
+     "$portsd" | cut -d':' -f1 | xargs -n1 grep -iH "${2}"

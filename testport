@@ -1,0 +1,81 @@
+#!/bin/sh
+
+# Run poudriere testport
+#
+# Usage: testport [-C] [-U] category/port
+#
+# -C: if tmux is running locally (and local is not the build host), then do
+#     not create a new tmux window
+# -U: do not update the ports tree before building
+#
+# globals expected in ${HOME}/.ports.conf with sample values
+# bhost='storage2.mathstat.dal.ca'       # build host
+# jaill="10i386 10amd64 11i386 11amd64"  # jail list
+
+. "$HOME/.ports.conf"
+
+usage () {
+  [ -n "$*" ] && printf "%s\\n" "$*" 1>&2
+  cat <<EOF 1>&2
+Usage: ${0##*/} [-C][-U] category/port
+EOF
+}
+
+testport () {
+  if [ "$(hostname)" != "$bhost" ]; then
+    if pgrep -q tmux && [ "$newtw" != 'no' ]; then
+      tmux neww \; send "ssh $bhost" KPEnter "testport $nu $1" KPEnter
+    else
+      ssh -t "$bhost" "testport $nu $1"
+    fi
+  else
+    if ! command -v tmux >/dev/null 2>&1; then
+      printf "tmux is required on the build host.\\n"
+      exit 1
+    fi
+    for j in $jaill; do
+      if [ -n "$nnpf" ]; then
+        tmux splitw -t "=build:$" \;\
+             send -t "=build:$" "sudo poudriere testport -j $j $1" KPEnter \;\
+             select-layout tiled
+      else
+        if tmux ls 2>&1 | grep -q '^build:'; then
+          tmux neww -t '=build'
+        else
+          tmux new -d -s 'build'
+        fi
+        [ -z "$nu" ] && tmux send -t '=build:$' pull KPENTER
+        tmux send -t '=build:$' "sudo poudriere options -j $bjail $1 && \
+sudo poudriere testport -j $j $1" KPEnter      
+        nnpf=1
+      fi
+    done
+    tmux att -d -t '=build' \;\
+         bind S set -t '=build' synchronize-panes \;\
+         set -t '=build:$' synchronize-panes on > /dev/null 2>&1
+  fi
+}
+
+############################################ main
+
+OPTIND=1
+while getopts ":CU" opt; do
+  case $opt in
+    C) newtw=no ;;
+    U) nu='-U' ;;
+    *)
+      usage "Invalid option: -$OPTARG."
+      exit 1
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if ! command -v tmux >/dev/null 2>&1 && [ "$newtw" != 'no' ]; then
+  printf "tmux is required locally unless -C is specified.\\n"
+  exit 1
+fi
+
+[ $# != 1 ] && { usage; exit 1; }
+
+testport "$1"

@@ -1,0 +1,91 @@
+#!/bin/sh
+
+# update a ports tree
+#
+# Usage: pull.sh [-m gsr|gpr|pdr|svn]
+#
+# -m: pull method
+#     gsr: git svn rebase
+#     gpr: git pull --rebase
+#     pdr: poudriere ports -u
+#     svn: svn
+#
+# globals expected in ${HOME}/.ports.conf with sample values
+# No leading '/' on directory names means they are relative to $HOME
+# portsd='/usr/ports'           # ports directory
+# pullm=gsr                     # pull method
+# svnd='scm/freebsd/ports/head' # svn ports directory
+
+. "$HOME/.ports.conf"
+
+usage () {
+  cat <<EOF 1>&2
+Usage: ${0##*/} [-m gsr|gpr|pdr|svn]
+EOF
+}
+
+# pull changes
+pull() {
+
+  local ret=-1
+
+  case $pullm in
+    gpr) # git pull --rebase
+      printf "Updating ports tree with 'git pull --rebase'...\\n"
+      git -C "${portsd}" pull --rebase
+      ret=$?
+      ;;
+    gsr) # git svn rebase
+      if [ "$(git -C "$portsd" symbolic-ref --short HEAD)" != "master" ]; then
+        printf "The master branch is not checked out.\\n"
+        ret=1
+      else
+        printf "Updating ports tree with 'git svn rebase'...\\n"
+        git -C "${portsd}" svn rebase
+        ret=$?
+      fi
+      ;;
+    poudriere)
+      printf "Updating ports tree with 'poudriere ports -u'...\\n"
+      sudo poudriere ports -u
+      ret=$?
+      ;;
+    svn)
+      printf "Updating ports tree under svn control...\\n"
+      svn update "$svnd"
+      ret=$?
+      ;;
+    *)
+      printf "Invalid update-method.\\n" 1>&2 ;;
+  esac
+
+  return "$ret"
+}
+
+############################################ main
+
+OPTIND=1
+while getopts ":m:" opt; do
+  case $opt in
+    m)
+      case $OPTARG in
+        gsr) pullm=gsr ;; # git svn rebase
+        gpr) pullm=gpr ;; # git pull --rebase
+        pdr) pullm=pdr ;; # poudriere ports -u
+        svn) pullm=svn ;; # svn up
+        *)   printf "Invalid update method, %s.\\n" "$OPTARG"
+             exit 1
+             ;;
+      esac
+      ;;
+    *) printf "Ignoring invalid option: -%s" "$opt" ;;
+  esac
+done
+shift $((OPTIND-1))
+
+[ $# != 0 ] && { usage; exit 1; }
+
+[ -n "${portsd##/*}" ] && portsd="${HOME}/$portsd"
+[ -n "${svnd##/*}" ] && svnd="${HOME}/$svnd"
+
+pull

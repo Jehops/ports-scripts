@@ -33,6 +33,7 @@ testport () {
       printf "tmux is required on the build host.\\n"
       exit 1
     fi
+    [ -z "$nu" ] && pull
     for j in $jaill; do
       if [ -n "$nnpf" ]; then
         tmux splitw -t "=build:$" \;\
@@ -44,7 +45,6 @@ testport () {
         else
           tmux new -d -s 'build'
         fi
-        [ -z "$nu" ] && tmux send -t '=build:$' pull KPENTER
         tmux send -t '=build:$' "sudo poudriere options -j $bjail $1 && \
 sudo poudriere testport -j $j $1" KPEnter      
         nnpf=1

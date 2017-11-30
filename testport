@@ -37,8 +37,8 @@ testport () {
     for j in $jaill; do
       if [ -n "$nnpf" ]; then
         tmux splitw -t "=build:$" \;\
-             send -t "=build:$" "sudo poudriere testport -j $j $1" KPEnter \;\
-             select-layout tiled
+             send -t "=build:$" "sudo poudriere options -j $bjail $1 && \
+sudo poudriere testport -j $j $1" KPEnter
       else
         if tmux ls 2>&1 | grep -q '^build:'; then
           tmux neww -t '=build'
@@ -46,11 +46,12 @@ testport () {
           tmux new -d -s 'build'
         fi
         tmux send -t '=build:$' "sudo poudriere options -j $bjail $1 && \
-sudo poudriere testport -j $j $1" KPEnter      
+sudo poudriere testport -j $j $1" KPEnter
         nnpf=1
       fi
     done
-    tmux att -d -t '=build' \;\
+    tmux selectl -t '=build' tiled \;\
+         att -d -t '=build' \;\
          bind S set -t '=build' synchronize-panes \;\
          set -t '=build:$' synchronize-panes on > /dev/null 2>&1
   fi

@@ -2,11 +2,11 @@
 
 # Run poudriere testport
 #
-# Usage: testport [-C] [-U] category/port
+# Usage: testport [-U] [-W] category/port
 #
-# -C: if tmux is running locally (and local is not the build host), then do
-#     not create a new tmux window
 # -U: do not update the ports tree before building
+# -W: if tmux is running locally (and local is not the build host), then do
+#     not create a new tmux window
 #
 # globals expected in ${HOME}/.ports.conf with sample values
 # bhost='storage2.mathstat.dal.ca'       # build host
@@ -17,7 +17,7 @@
 usage () {
   [ -n "$*" ] && printf "%s\\n" "$*" 1>&2
   cat <<EOF 1>&2
-Usage: ${0##*/} [-C][-U] category/port
+Usage: ${0##*/} [-U][-W] category/port
 EOF
 }
 
@@ -59,10 +59,10 @@ sudo poudriere testport -j $j $1" KPEnter
 ############################################ main
 
 OPTIND=1
-while getopts ":CU" opt; do
+while getopts ":UW" opt; do
   case $opt in
-    C) newtw=no ;;
     U) nu='-U' ;;
+    W) newtw=no ;;
     *)
       usage "Invalid option: -$OPTARG."
       exit 1
@@ -72,7 +72,7 @@ done
 shift $((OPTIND-1))
 
 if ! command -v tmux >/dev/null 2>&1 && [ "$newtw" != 'no' ]; then
-  printf "tmux is required locally unless -C is specified.\\n"
+  printf "tmux is required locally unless -W is specified.\\n"
   exit 1
 fi
 

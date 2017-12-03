@@ -51,9 +51,10 @@ sudo poudriere testport -j $j $1" KPEnter
       fi
     done
     tmux selectl -t '=build' tiled \;\
-         att -d -t '=build' \;\
          bind S set -t '=build' synchronize-panes \;\
          set -t '=build:$' synchronize-panes on > /dev/null 2>&1
+    tmux att -t '=build' > /dev/null 2>&1
+
   fi
 }
 

@@ -44,15 +44,17 @@ build () {
              "$listf"
       return 0
     else
-      if tmux ls 2>&1 | grep -q '^build:'; then
-        tmux neww -t '=build'
-      else
-        tmux new -d -s 'build'
-      fi
-      [ -z "$nu" ] && tmux send -t '=build:$' pull KPENTER
-      tmux send -t '=build:$' "sudo poudriere options -j $bjail -f $HOME/$listf \
-&& sudo poudriere bulk -j $bjail -f $HOME/$listf" KPEnter
-      tmux att -d -t '=build' > /dev/null 2>&1
+#       if tmux ls 2>&1 | grep -q '^build:'; then
+#         tmux neww -t '=build'
+#       else
+#         tmux new -d -s 'build'
+#       fi
+#       [ -z "$nu" ] && tmux send -t '=build:$' pull KPENTER
+#       tmux send -t '=build:$' "sudo poudriere options -j $bjail -f $HOME/$listf \
+# && sudo poudriere bulk -j $bjail -f $HOME/$listf" KPEnter
+#       tmux att -d -t '=build' > /dev/null 2>&1
+      sudo poudriere options -j "$bjail" -f "$HOME/$listf" && \
+        sudo poudriere bulk -j "$bjail" -f "$HOME/$listf"
     fi
   fi
 }

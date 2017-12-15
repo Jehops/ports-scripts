@@ -53,7 +53,8 @@ build () {
 #       tmux send -t '=build:$' "sudo poudriere options -j $bjail -f $HOME/$listf \
 # && sudo poudriere bulk -j $bjail -f $HOME/$listf" KPEnter
 #       tmux att -d -t '=build' > /dev/null 2>&1
-      sudo poudriere options -j "$bjail" -f "$HOME/$listf" && \
+      pull && \
+        sudo poudriere options -j "$bjail" -f "$HOME/$listf" && \
         sudo poudriere bulk -j "$bjail" -f "$HOME/$listf"
     fi
   fi

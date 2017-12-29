@@ -1,0 +1,21 @@
+#!/bin/sh
+
+if sed -i '' \
+    -e 's/PR:[[:space:]]*$//' \
+    -e 's/Submitted by:[[:space:]]*$//' \
+    -e 's/Reported by:[[:space:]]*$//' \
+    -e 's/Reviewed by:[[:space:]]*$//' \
+    -e 's/Approved by:[[:space:]]*$//' \
+    -e 's/Obtained from:[[:space:]]*$//' \
+    -e 's/MFC after:[[:space:]]*$//' \
+    -e 's/MFH:[[:space:]]*$//' \
+    -e 's/Relnotes:[[:space:]]*$//' \
+    -e 's/Security:[[:space:]]*$//' \
+    -e 's/Sponsored by:[[:space:]]*$//' \
+    -e 's/Differential Revision:[[:space:]]*$//' \
+    "$1"; then
+  return 0
+else
+  printf "Error processing the commit message\\n."
+  exit 1
+fi

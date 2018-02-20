@@ -53,10 +53,12 @@ push() {
   case $pushp in
     [Yy]|[Yy][Ee][Ss]|1)
       if pushp; then
-        printf "Pushing changes...\\n"
+        printf "* git -C ${portsd} push"
         if [ "$forcep" = 'yes' ]; then
+          printf "--force\\n"
           git -C "${portsd}" push --force
         else
+          printf "\\n"
           git -C "${portsd}" push
         fi
       fi

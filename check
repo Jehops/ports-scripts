@@ -16,7 +16,7 @@ EOF
 }
 
 check() {
-  printf "Checking for installed packages with updated ports...\\n"
+  printf "* pkg version -vl'<'\\n"
   local updates=$(pkg version -vl'<')
   if [ -n "$updates" ]; then
     printf "%s\\n" "$updates"

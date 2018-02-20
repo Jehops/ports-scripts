@@ -31,7 +31,7 @@ pull() {
 
   case $pullm in
     gpr) # git pull --rebase
-      printf "Updating ports tree with 'git pull --rebase'...\\n"
+      printf "* git -C ${portsd} pull --rebase\\n"
       git -C "${portsd}" pull --rebase
       ret=$?
       ;;
@@ -40,18 +40,18 @@ pull() {
         printf "The master branch is not checked out.\\n"
         ret=1
       else
-        printf "Updating ports tree with 'git svn rebase'...\\n"
+        printf "* git -C ${portsd} svn rebase\\n"
         git -C "${portsd}" svn rebase
         ret=$?
       fi
       ;;
     poudriere)
-      printf "Updating ports tree with 'poudriere ports -u'...\\n"
+      printf "poudriere ports -u\\n"
       sudo poudriere ports -u
       ret=$?
       ;;
     svn)
-      printf "Updating ports tree under svn control...\\n"
+      printf "* svn update $svnd\\n"
       svn update "$svnd"
       ret=$?
       ;;

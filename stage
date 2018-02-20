@@ -15,11 +15,13 @@ stage () {
   if [ "$(hostname)" != "$bhost" ]; then
     if [ -f "$listf" ] && [ -r "$listf" ]; then
       if [ "$1" = 'yes' ]; then
-        printf "Appending the list of ports to %s:%s...\\n" "$bhost" "$listf"
+        #printf "Appending the list of ports to %s:%s...\\n" "$bhost" "$listf"
+        printf "* ssh $bhost \"cat >> $listf\" < $listf\\n"
         ssh "$bhost" "cat >> $listf" < "$listf"
         ret=$?
       else
-        printf "Sending the list of ports to %s:%s...\\n" "$bhost" "$listf"
+        #printf "Sending the list of ports to %s:%s...\\n" "$bhost" "$listf"
+        printf "* scp $listf ${bhost}:${listf}\\n"
         scp "$listf" "${bhost}:${listf}"
         ret=$?
       fi

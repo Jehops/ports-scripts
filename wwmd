@@ -2,7 +2,7 @@
 
 # What would maintainer do?
 #
-# Usage: wwmd <MAINTAINER= regexp> <Makefile regexp> category/port
+# Usage: wwmd <MAINTAINER= regexp> <Makefile regexp>
 #
 # The first argument is a regular expression to match after MAINTAINER=
 # The second argument is a regular expression to match in Makefiles
@@ -13,7 +13,7 @@
 
 usage () {
   cat <<EOF 1>&2
-Usage: ${0##*/} <MAINTAINER= regexp> <Makefile regexp> category/port
+Usage: ${0##*/} <MAINTAINER= regexp> <Makefile regexp>
 EOF
 }
 
@@ -23,3 +23,6 @@ EOF
 
 grep --color=auto --include="*/*/Makefile" -r "MAINTAINER=[[:space:]]*${1}" \
      "$portsd" | cut -d':' -f1 | xargs -n1 grep -iH "${2}"
+
+##grep --color=auto --include="*/*/Makefile" -r "MAINTAINER=[[:space:]]*${1}" \
+##     "$portsd" | sed -e 's|/Makefile.*|/pkg-plist|' | xargs -n1 grep -iH "${2}"

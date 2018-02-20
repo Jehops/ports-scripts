@@ -37,7 +37,7 @@ testport () {
     for j in $jaill; do
       if [ -n "$nnpf" ]; then
         tmux splitw -t "=build:$" \;\
-             send -t "=build:$" "sudo poudriere options -j $bjail $1 && \
+             send -t "=build:$" "sudo poudriere options -j $j $1 && \
 sudo poudriere testport -j $j $1" KPEnter
       else
         if tmux ls 2>&1 | grep -q '^build:'; then
@@ -45,7 +45,7 @@ sudo poudriere testport -j $j $1" KPEnter
         else
           tmux new -d -s 'build'
         fi
-        tmux send -t '=build:$' "sudo poudriere options -j $bjail $1 && \
+        tmux send -t '=build:$' "sudo poudriere options -j $j $1 && \
 sudo poudriere testport -j $j $1" KPEnter
         nnpf=1
       fi

@@ -20,9 +20,13 @@ check() {
   local updates=$(pkg version -vl'<')
   if [ -n "$updates" ]; then
     printf "%s\\n" "$updates"
-    local origins="$(pkg info -oq $(printf "%s\\n" "$updates" | cut -w -f1))"
+    # of holds origins and possibly a flavor on the next line
+    local of="$(pkg info -oAq $(printf "%s" "$updates" | cut -w -f1) |
+awk -F'[[:blank:]]*:[[:blank:]]*' '/^(Origin|flavor)/ {print $2}')"
   fi
-  printf "%s\\n" "$origins" > "$listf"
+
+  printf "%s\\n" "$of" | tr '\n' ' ' | sed 's/ \([[:alnum:]]*\) /@\1 /g' |\
+    tr ' ' '\n' > "$listf"
 }
 
 ############################################ main

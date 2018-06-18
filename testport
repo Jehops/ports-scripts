@@ -12,6 +12,10 @@
 # bhost='storage2.mathstat.dal.ca'       # build host
 # jaill="10i386 10amd64 11i386 11amd64"  # jail list
 
+# Notes:
+# - = before the target-pane/window means require an exact match
+# - :$ means the highest numbered window
+
 . "$HOME/.ports.conf"
 
 usage () {

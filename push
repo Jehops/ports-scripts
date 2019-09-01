@@ -2,7 +2,7 @@
 
 # push local ports tree changes
 #
-# Usage: push.sh [-f]
+# Usage: push [-f]
 #
 # -f: force push (use 'git push --force')
 #

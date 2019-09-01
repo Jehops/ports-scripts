@@ -2,7 +2,7 @@
 
 # update a ports tree
 #
-# Usage: pull.sh [-m gsr|gpr|pdr|svn]
+# Usage: pull [-m gsr|gpr|pdr|svn]
 #
 # -m: pull method
 #     gsr: git svn rebase

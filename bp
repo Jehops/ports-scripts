@@ -1,0 +1,60 @@
+#!/usr/local/bin/perl
+
+use strict;
+use warnings;
+use File::Basename;
+use File::Copy;
+
+# Get a list of Emacs ports that need to be bumped with:
+#
+# grep --include=\*Makefile --include=\*pkg-plist -lr \
+#  'EMACS_VERSION_SITE_LISPDIR' /usr/ports | \
+#  sed -e 's#/usr/ports/\(.*\)/[-A-z]*$#\1#' | sort -u
+
+sub usage() {
+    my $sname = basename($0);
+
+    print <<EOF;
+Usage: $sname <file>
+
+  <file> contains a list of ports for which PORTREVISION will
+  be bumped. There should be one port per line and each port
+  is relative to the top of the ports tree.
+
+EOF
+    exit 1;
+}
+
+my $ports_dir = '/usr/ports';
+
+scalar(@ARGV) == 1 or usage;
+open(my $fh, "<$ARGV[0]") or die "Could not open file '$ARGV[0]'.\n  $!";
+
+while (my $port = <$fh>) {
+    chomp $port;
+
+    my $Makefile_bak = "$ports_dir/$port/Makefile.bak";
+    my $Makefile     = "$ports_dir/$port/Makefile";
+
+    move($Makefile,$Makefile_bak)
+      or die "Renaming $Makefile to $Makefile_bak failed: $!";
+
+    open(my $p_fh_in,  '<', $Makefile_bak)
+      or die "Could not open file $Makefile_bak for reading $!";
+    open(my $p_fh_out, '>', $Makefile)
+      or die "Could not open file $Makefile for writing $!";
+
+    my $match = 0;
+    while (my $line = <$p_fh_in>) {
+        if ($line =~ s/(^PORTREVISION=)(\s*)(\d+)/$1 . $2 . ($3+1)/e) {
+            $match = 1;
+        }
+        if ($line =~ /^CATEGORIES??=/ || $line =~ /^PORTEPOCH??=/) {
+            print $p_fh_out "PORTREVISION=	1\n" if !$match;
+            $match = 1;
+        }
+        print $p_fh_out $line;
+    }
+
+    close($p_fh_out);
+}

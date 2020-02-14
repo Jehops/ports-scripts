@@ -9,7 +9,7 @@
 #
 # globals expected in ${HOME}/.ports.conf with sample values
 # bhost='storage2.mathstat.dal.ca'  # build host
-# bjail='11amd64'   # build jail
+# bjail='12amd64'   # build jail
 # listf='ports.txt' # list file of ports to build, relative to $HOME
 
 . "$HOME/.ports.conf"

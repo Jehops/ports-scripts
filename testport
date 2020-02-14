@@ -2,8 +2,10 @@
 
 # Run poudriere testport
 #
-# Usage: testport [-U] [-W] category/port
+# Usage: testport [-biUW] category/port
 #
+# -b: use 'bulk -t -C' instead of testport
+# -i: supply -i to `poudirere testport`
 # -U: do not update the ports tree before building
 # -W: if tmux is running locally (and local is not the build host), then do
 #     not create a new tmux window
@@ -21,7 +23,7 @@
 usage () {
   [ -n "$*" ] && printf "%s\\n" "$*" 1>&2
   cat <<EOF 1>&2
-Usage: ${0##*/} [-U][-W] category/port
+Usage: ${0##*/} [-biUW] category/port
 EOF
 }
 
@@ -42,7 +44,7 @@ testport () {
       if [ -n "$nnpf" ]; then
         tmux splitw -t "=build:$" \;\
              send -t "=build:$" "sudo poudriere options -j $j $1 && \
-sudo poudriere testport -j $j $1" KPEnter
+sudo poudriere $b $i -j $j $1" KPEnter
       else
         if tmux ls 2>&1 | grep -q '^build:'; then
           tmux neww -t '=build'
@@ -50,7 +52,7 @@ sudo poudriere testport -j $j $1" KPEnter
           tmux new -d -s 'build'
         fi
         tmux send -t '=build:$' "sudo poudriere options -j $j $1 && \
-sudo poudriere testport -j $j $1" KPEnter
+sudo poudriere $b $i -j $j $1" KPEnter
         nnpf=1
       fi
     done
@@ -64,8 +66,10 @@ sudo poudriere testport -j $j $1" KPEnter
 ############################################ main
 
 OPTIND=1
-while getopts ":UW" opt; do
+while getopts ":biUW" opt; do
   case $opt in
+    b) b='bulk -t -C ' ;;
+    i) i='-i' ;;
     U) nu='-U' ;;
     W) newtw=no ;;
     *)
@@ -82,5 +86,7 @@ if ! command -v tmux >/dev/null 2>&1 && [ "$newtw" != 'no' ]; then
 fi
 
 [ $# != 1 ] && { usage; exit 1; }
+
+[ -z "$b" ] && b='testport ';
 
 testport "$1"

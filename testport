@@ -2,11 +2,11 @@
 
 # Run poudriere testport
 #
-# Usage: testport [-biUW] category/port
+# Usage: testport [-biuW] category/port
 #
 # -b: use 'bulk -t -C' instead of testport
 # -i: supply -i to `poudirere testport`
-# -U: do not update the ports tree before building
+# -u: update the ports tree before building
 # -W: if tmux is running locally (and local is not the build host), then do
 #     not create a new tmux window
 #
@@ -30,16 +30,16 @@ EOF
 testport () {
   if [ "$(hostname)" != "$bhost" ]; then
     if pgrep -q tmux && [ "$newtw" != 'no' ]; then
-      tmux neww \; send "ssh $bhost" KPEnter "testport $nu $1" KPEnter
+      tmux neww \; send "ssh $bhost" KPEnter "testport $up $1" KPEnter
     else
-      ssh -t "$bhost" "testport $nu $1"
+      ssh -t "$bhost" "testport $up $1"
     fi
   else
     if ! command -v tmux >/dev/null 2>&1; then
       printf "tmux is required on the build host.\\n"
       exit 1
     fi
-    [ -z "$nu" ] && pull
+    [ -n "$up" ] && pull
     for j in $jaill; do
       if [ -n "$nnpf" ]; then
         tmux splitw -t "=build:$" \;\
@@ -70,7 +70,7 @@ while getopts ":biUW" opt; do
   case $opt in
     b) b='bulk -t -C ' ;;
     i) i='-i' ;;
-    U) nu='-U' ;;
+    u) up='-u' ;;
     W) newtw=no ;;
     *)
       usage "Invalid option: -$OPTARG."

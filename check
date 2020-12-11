@@ -26,11 +26,12 @@ awk -F'[[:blank:]]*:[[:blank:]]*' '/^(Origin|flavor)/ {print $2}')"
   fi
 
   printf "%s\\n" "$of" | tr '\n' ' ' | sed 's/ \([[:alnum:]_]*\) /@\1 /g' |\
-    tr ' ' '\n' > "$listf"
+    tr ' ' '\n' >> "$listf"
 }
 
 ############################################ main
 
 [ $# != 0 ] && { usage; exit 1; }
 [ -n "${listf##/*}" ] && listf="${HOME}/$listf"
+: > "$listf"
 check

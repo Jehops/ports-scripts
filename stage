@@ -12,7 +12,9 @@
 . "$HOME/.ports.conf"
 
 stage () {
-  if [ "$(hostname)" != "$bhost" ]; then
+  hostname=$(hostname)
+  if [ "$hostname" != "$bhost" ] && \
+       [ "$hostname" != "awarnach.mathstat.dal.ca" ]; then
     if [ -f "$listf" ] && [ -r "$listf" ]; then
       if [ "$1" = 'yes' ]; then
         #printf "Appending the list of ports to %s:%s...\\n" "$bhost" "$listf"

@@ -21,6 +21,10 @@ Usage: ${0##*/} [-U][-W]
 EOF
 }
 
+clean_listf() {
+    sort -u "$HOME/$listf" -o "$HOME/$listf"
+}
+
 build () {
   if [ "$(hostname)" != "$bhost" ]; then
     if pgrep -q tmux && [ "$newtw" != 'no' ]; then
@@ -80,4 +84,5 @@ if ! command -v tmux >/dev/null 2>&1 && [ "$newtw" != 'no' ]; then
 fi
 
 [ $# != 0 ] && { usage; exit 1; }
+clean_listf
 build

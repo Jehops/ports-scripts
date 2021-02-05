@@ -33,5 +33,5 @@ awk -F'[[:blank:]]*:[[:blank:]]*' '/^(Origin|flavor)/ {print $2}')"
 
 [ $# != 0 ] && { usage; exit 1; }
 [ -n "${listf##/*}" ] && listf="${HOME}/$listf"
-: > "$listf"
+
 check

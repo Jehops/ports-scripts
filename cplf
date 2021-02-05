@@ -9,4 +9,5 @@
 
 . "$HOME/.ports.conf"
 
+[ -n "${listf##/*}" ] && listf="${HOME}/$listf"
 : > "$listf"

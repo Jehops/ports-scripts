@@ -1,0 +1,39 @@
+#!/bin/sh
+
+# rum, r_ebase onto u_pdated m_ain
+#
+# Usage: rum
+#
+# globals expected in ${HOME}/.ports.conf with sample values
+# No leading '/' on directory names means they are relative to $HOME
+# portsd='/usr/ports'           # ports directory
+
+. "$HOME/.ports.conf"
+
+usage () {
+  cat <<EOF 1>&2
+Usage: ${0##*/}
+EOF
+}
+
+############################################ main
+
+[ $# != 0 ] && { usage; exit 1; }
+
+[ -n "${portsd##/*}" ] && portsd="${HOME}/$portsd"
+
+# current branch
+cb="$(git -C "$portsd" symbolic-ref --short HEAD)"
+
+if [ -z "$cb" ]; then
+  printf "Could not determine the checked out git branch.\\n"
+  exit 1
+elif [ "$cb" = "main" ]; then
+  printf "The main branch is checked out.\\n"
+  exit 1
+fi
+
+git -C "$portsd" checkout main && \
+  pull && \
+  git -C "$portsd" checkout "$cb" && \
+  git rebase main

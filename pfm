@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# push to FreeBSD's main branch
+#
+# Usage: push
+#
+# globals expected in ${HOME}/.ports.conf with sample values
+# No leading '/' on directory names means they are relative to $HOME
+# portsd='/usr/ports'
+
+. "$HOME/.ports.conf"
+
+usage () {
+  cat <<EOF 1>&2
+Usage: ${0##*/}
+EOF
+}
+
+############################################ main
+
+[ $# != 0 ] && { usage; exit 1; }
+
+[ -n "${portsd##/*}" ] && portsd="${HOME}/$portsd"
+
+# current branch
+cb="$(git -C "$portsd" branch --show-current)"
+
+if [ -z "$cb" ]; then
+  printf "Could not determine the checked out git branch.\\n"
+  exit 1
+fi
+
+git -C "$portsd" push -u freebsd "$cb":main && \
+  git -C "$portsd" checkout main

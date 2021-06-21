@@ -13,8 +13,7 @@
 
 stage () {
   hostname=$(hostname)
-  if [ "$hostname" != "$bhost" ] && \
-       [ "$hostname" != "awarnach.mathstat.dal.ca" ]; then
+  if [ "$hostname" != "$bhost" ]; then
     if [ -f "$listf" ] && [ -r "$listf" ]; then
       if [ "$1" = 'yes' ]; then
         #printf "Appending the list of ports to %s:%s...\\n" "$bhost" "$listf"

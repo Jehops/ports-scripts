@@ -2,7 +2,7 @@
 
 # What would maintainer do?
 #
-# Usage: wwmd <MAINTAINER= regexp> <Makefile regexp>
+# Usage: wwmd <MAINTAINER regexp> <Makefile regexp>
 #
 # The first argument is a regular expression to match after MAINTAINER=
 # The second argument is a regular expression to match in Makefiles
@@ -13,16 +13,22 @@
 
 usage () {
   cat <<EOF 1>&2
-Usage: ${0##*/} <MAINTAINER= regexp> <Makefile regexp>
+Usage: ${0##*/} <MAINTAINER regexp> <Makefile regexp>
 EOF
 }
 
 ############################################ main
 
-[ $# != 2 ] && { usage; exit 1; }
+if [ $# != 2 ]; then
+  usage
+  exit 1
+fi
 
-grep --color=auto --include="*/*/Makefile" -r "MAINTAINER=[[:space:]]*${1}" \
-     "$portsd" | cut -d':' -f1 | xargs -n1 grep -iH "${2}"
+rg -g '/*/*/Makefile' -l "MAINTAINER=[[:space:]]*$1" "$portsd" \
+  | xargs dirname | xargs -n1 rg "$2"
 
-##grep --color=auto --include="*/*/Makefile" -r "MAINTAINER=[[:space:]]*${1}" \
-##     "$portsd" | sed -e 's|/Makefile.*|/pkg-plist|' | xargs -n1 grep -iH "${2}"
+#grep --color=auto --include="*/*/Makefile" -r "MAINTAINER=[[:space:]]*${1}" \
+#     "$portsd" | cut -d':' -f1 | xargs -n1 grep -iH "${2}"
+
+#grep --color=auto --include="*/*/Makefile" -r "MAINTAINER=[[:space:]]*${1}" \
+#     "$portsd" | sed -e 's|/Makefile.*|/pkg-plist|' | xargs -n1 grep -iH "${2}"

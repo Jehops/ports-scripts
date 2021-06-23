@@ -24,7 +24,7 @@ if [ $# != 2 ]; then
   exit 1
 fi
 
-rg -g '/*/*/Makefile' -l "MAINTAINER=[[:space:]]*$1" "$portsd" \
+rg -g 'Makefile' -l "MAINTAINER=[[:space:]]*$1" "$portsd" \
   | xargs dirname | xargs -n1 rg "$2"
 
 #grep --color=auto --include="*/*/Makefile" -r "MAINTAINER=[[:space:]]*${1}" \

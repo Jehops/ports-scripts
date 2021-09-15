@@ -15,23 +15,29 @@ Usage: ${0##*/}
 EOF
 }
 
+# check() {
+#   printf "* pkg version -vl'<'\\n"
+#   local updates=$(pkg version -vl'<')
+#   if [ -n "$updates" ]; then
+#     printf "%s\\n" "$updates"
+#     # of holds origins and possibly a flavor on the next line
+#     local of="$(pkg info -oAq $(printf "%s" "$updates" | cut -w -f1) |
+# awk -F'[[:blank:]]*:[[:blank:]]*' '/^(Origin|flavor)/ {print $2}')"
+#   fi
+
+#   printf "%s\\n" "$of" | tr '\n' ' ' | sed 's/ \([[:alnum:]_]*\) /@\1 /g' |\
+#     tr ' ' '\n' >> "$listf"
+# }
+
 check() {
   printf "* pkg version -vl'<'\\n"
-  local updates=$(pkg version -vl'<')
-  if [ -n "$updates" ]; then
-    printf "%s\\n" "$updates"
-    # of holds origins and possibly a flavor on the next line
-    local of="$(pkg info -oAq $(printf "%s" "$updates" | cut -w -f1) |
-awk -F'[[:blank:]]*:[[:blank:]]*' '/^(Origin|flavor)/ {print $2}')"
-  fi
-
-  printf "%s\\n" "$of" | tr '\n' ' ' | sed 's/ \([[:alnum:]_]*\) /@\1 /g' |\
-    tr ' ' '\n' >> "$listf"
+  pkg version -vl'<'
 }
+
 
 ############################################ main
 
 [ $# != 0 ] && { usage; exit 1; }
-[ -n "${listf##/*}" ] && listf="${HOME}/$listf"
+#[ -n "${listf##/*}" ] && listf="${HOME}/$listf"
 
 check

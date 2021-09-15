@@ -31,6 +31,8 @@ stage () {
         scp "$listf" "${bhost}:${listf}"
         ret=$?
       fi
+    else
+      ret=0
     fi
   else
     printf "The file %s does not exist or is not writable.\\n" "$listf"

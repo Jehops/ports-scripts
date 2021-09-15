@@ -13,8 +13,13 @@
 
 stage () {
   hostname=$(hostname)
-  if [ "$hostname" != "$bhost" ]; then
-    if [ -f "$listf" ] && [ -r "$listf" ]; then
+  if [ -f "$listf" ] && [ -w "$listf" ]; then
+    of="$(pkg info -oAq | awk -F'[[:blank:]]*:[[:blank:]]*'\
+      '/^(Origin|flavor)/ {print $2}')"
+    local of
+    printf "%s\\n" "$of" | tr '\n' ' ' |\
+      sed 's/ \([[:alnum:]_]*\) /@\1 /g' | tr ' ' '\n' >> "$listf"
+    if [ "$hostname" != "$bhost" ]; then
       if [ "$1" = 'yes' ]; then
         #printf "Appending the list of ports to %s:%s...\\n" "$bhost" "$listf"
         printf "* ssh %s \"cat >> %s\" < %s\\n" "$bhost" "$listf" "$listf"
@@ -26,16 +31,14 @@ stage () {
         scp "$listf" "${bhost}:${listf}"
         ret=$?
       fi
-    else
-      printf "The file %s does not exist or is not readable.\\n" "$listf"
-      ret=1
     fi
   else
-    printf "Refusing to stage on the build host.\\n"
+    printf "The file %s does not exist or is not writable.\\n" "$listf"
     ret=1
   fi
 
   return "$ret"
+
 }
 
 ############################################ main

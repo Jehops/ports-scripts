@@ -60,4 +60,6 @@ while getopts ":a" opt; do
   esac
 done
 
+listf="$listf.$(hostname -s)"
+
 stage "$appendp"

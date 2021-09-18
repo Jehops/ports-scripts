@@ -13,8 +13,7 @@
 
 stage () {
   hostname=$(hostname)
-  if [ -f "$listf" ] && [ -w "$listf" ]; then
-    of="$(pkg info -oAq | \
+  of="$(pkg info -oAq | \
           awk -F'[[:blank:]]*:[[:blank:]]*' \
             '/^(Origin|flavor)/ {
              if ( $1 == "Origin" ) {
@@ -23,25 +22,21 @@ stage () {
              }
              else if ( $1 == "flavor" && !io && $2 != "default" ) { print "@"$2 }
           }')"
-    printf "%s\\n" "$of" | tr '\n' ' ' | sed 's/ @/@/g' | tr ' ' '\n' >> "$listf"
-    if [ "$hostname" != "$bhost" ]; then
-      if [ "$1" = 'yes' ]; then
-        #printf "Appending the list of ports to %s:%s...\\n" "$bhost" "$listf"
-        printf "* ssh %s \"cat >> %s\" < %s\\n" "$bhost" "$listf" "$listf"
-        ssh "$bhost" "cat >> $listf" < "$listf"
-        ret=$?
-      else
-        #printf "Sending the list of ports to %s:%s...\\n" "$bhost" "$listf"
-        printf "* scp %s %s:%s\\n" "$listf" "$bhost" "$listf"
-        scp "$listf" "${bhost}:${listf}"
-        ret=$?
-      fi
+  printf "%s\\n" "$of" | tr '\n' ' ' | sed 's/ @/@/g' | tr ' ' '\n' > "$listf"
+  if [ "$hostname" != "$bhost" ]; then
+    if [ "$1" = 'yes' ]; then
+      #printf "Appending the list of ports to %s:%s...\\n" "$bhost" "$listf"
+      printf "* ssh %s \"cat >> %s\" < %s\\n" "$bhost" "$listf" "$listf"
+      ssh "$bhost" "cat >> $listf" < "$listf"
+      ret=$?
     else
-      ret=0
+      #printf "Sending the list of ports to %s:%s...\\n" "$bhost" "$listf"
+      printf "* scp %s %s:%s\\n" "$listf" "$bhost" "$listf"
+      scp "$listf" "${bhost}:${listf}"
+      ret=$?
     fi
   else
-    printf "The file %s does not exist or is not writable.\\n" "$listf"
-    ret=1
+    ret=0
   fi
 
   return "$ret"

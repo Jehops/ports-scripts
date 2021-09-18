@@ -10,7 +10,8 @@
 # globals expected in ${HOME}/.ports.conf with sample values
 # bhost='storage2.mathstat.dal.ca'  # build host
 # bjail='12amd64'   # build jail
-# listf='ports.txt' # list file of ports to build, relative to $HOME
+# listf='.pl' # list file of ports to build
+# if no path is supplied in listf, then ${HOME}/ is assumed
 
 . "$HOME/.ports.conf"
 
@@ -21,8 +22,9 @@ Usage: ${0##*/} [-U][-W]
 EOF
 }
 
-clean_listf() {
-    sort -u "$HOME/$listf" -o "$HOME/$listf"
+create_listf() {
+  cat "$listf".* > "$listf"
+  sort -u "$listf" -o "$listf"
 }
 
 build () {
@@ -37,15 +39,14 @@ build () {
       printf "tmux is required on the build host.\\n"
       exit 1
     fi
-    if ! [ -f "${HOME}/$listf" ]; then
-      printf "The file, %s/%s, does not exist.\\n" "${HOME}" "$listf"
+    if ! [ -f "$listf" ]; then
+      printf "The file, %s, does not exist.\\n" "$listf"
       exit 1
-    elif ! [ -r "${HOME}/$listf" ]; then
-      printf "The file, %s/%s, is not readable.\\n" "${HOME}" "$listf"
+    elif ! [ -r "$listf" ]; then
+      printf "The file, %s, is not readable.\\n" "$listf"
       exit 1
-    elif ! [ -s "${HOME}/$listf" ]; then
-      printf "Nothing new to build. The file, %s/%s, is empty.\\n" "${HOME}" \
-             "$listf"
+    elif ! [ -s "$listf" ]; then
+      printf "Nothing new to build. The file, %s, is empty.\\n" "$listf"
       return 0
     else
 #       if tmux ls 2>&1 | grep -q '^build:'; then
@@ -54,12 +55,12 @@ build () {
 #         tmux new -d -s 'build'
 #       fi
 #       [ -z "$nu" ] && tmux send -t '=build:$' pull KPENTER
-#       tmux send -t '=build:$' "sudo poudriere options -j $bjail -f $HOME/$listf \
-# && sudo poudriere bulk -j $bjail -f $HOME/$listf" KPEnter
+#       tmux send -t '=build:$' "sudo poudriere options -j $bjail -f $listf \
+# && sudo poudriere bulk -j $bjail -f $listf" KPEnter
 #       tmux att -d -t '=build' > /dev/null 2>&1
       pull && \
-        sudo poudriere options -j "$bjail" -f "$HOME/$listf" && \
-        sudo poudriere bulk -j "$bjail" -f "$HOME/$listf"
+        #sudo poudriere options -j "$bjail" -f "$listf" && \
+        sudo poudriere bulk -j "$bjail" -f "$listf"
     fi
   fi
 }
@@ -84,5 +85,8 @@ if ! command -v tmux >/dev/null 2>&1 && [ "$newtw" != 'no' ]; then
 fi
 
 [ $# != 0 ] && { usage; exit 1; }
-clean_listf
+
+[ -n "${listf##/*}" ] && listf="${HOME}/$listf"
+
+create_listf
 build

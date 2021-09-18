@@ -14,11 +14,16 @@
 stage () {
   hostname=$(hostname)
   if [ -f "$listf" ] && [ -w "$listf" ]; then
-    of="$(pkg info -oAq | awk -F'[[:blank:]]*:[[:blank:]]*'\
-      '/^(Origin|flavor)/ {print $2}')"
-    local of
-    printf "%s\\n" "$of" | tr '\n' ' ' |\
-      sed 's/ \([[:alnum:]_]*\) /@\1 /g' | tr ' ' '\n' >> "$listf"
+    of="$(pkg info -oAq | \
+          awk -F'[[:blank:]]*:[[:blank:]]*' \
+            '/^(Origin|flavor)/ {
+             if ( $1 == "Origin" ) {
+               if ( system("test -d /usr/ports/"$2) ) { io=1 }
+               else { io=0; print $2 }
+             }
+             else if ( $1 == "flavor" && !io && $2 != "default" ) { print "@"$2 }
+          }')"
+    printf "%s\\n" "$of" | tr '\n' ' ' | sed 's/ @/@/g' | tr ' ' '\n' >> "$listf"
     if [ "$hostname" != "$bhost" ]; then
       if [ "$1" = 'yes' ]; then
         #printf "Appending the list of ports to %s:%s...\\n" "$bhost" "$listf"

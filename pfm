@@ -30,5 +30,7 @@ if [ -z "$cb" ]; then
   exit 1
 fi
 
-git -C "$portsd" push --push-option=confirm-author -u freebsd "$cb":main && \
+git -C "$portsd" push \
+    --push-option=confirm-author --push-option=confirm-subject \
+    -u freebsd "$cb":main && \
   git -C "$portsd" checkout main

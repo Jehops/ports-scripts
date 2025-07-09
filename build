@@ -8,8 +8,8 @@
 #     not create a new tmux window
 #
 # globals expected in ${HOME}/.ports.conf with sample values
-# bhost='storage2.mathstat.dal.ca'  # build host
-# bjail='12amd64'   # build jail
+# bhost='ser.ftfl.ca'  # build host
+# bjail='13amd64'   # build jail
 # listf='.pl' # list file of ports to build
 # if no path is supplied in listf, then ${HOME}/ is assumed
 
@@ -57,10 +57,18 @@ build () {
 #       [ -z "$nu" ] && tmux send -t '=build:$' pull KPENTER
 #       tmux send -t '=build:$' "sudo poudriere options -j $bjail -f $listf \
 # && sudo poudriere bulk -j $bjail -f $listf" KPEnter
-#       tmux att -d -t '=build' > /dev/null 2>&1
-      pull && \
+        #       tmux att -d -t '=build' > /dev/null 2>&1
         #sudo poudriere options -j "$bjail" -f "$listf" && \
-        sudo poudriere bulk -j "$bjail" -f "$listf"
+        if [ -z "$nu" ]; then
+            pull && \
+              printf "* poudriere bulk -j $bjail -f $listf\\n" && \
+              #sudo poudriere bulk -O sccache -j "$bjail" -f "$listf"
+              sudo poudriere bulk -j "$bjail" -f "$listf"
+        else
+            printf "* poudriere bulk -j $bjail -f $listf\\n"
+            #sudo poudriere bulk -O sccache -j "$bjail" -f "$listf"
+            sudo poudriere bulk -j "$bjail" -f "$listf"
+        fi
     fi
   fi
 }

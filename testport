@@ -66,7 +66,7 @@ testport () {
 OPTIND=1
 while getopts ":biUW" opt; do
   case $opt in
-    b) b='bulk -t -C ' ;;
+    b) b='bulk -t -C' ;;
     i) i='-i' ;;
     u) up='-u' ;;
     W) newtw=no ;;
@@ -85,6 +85,6 @@ fi
 
 [ $# != 1 ] && { usage; exit 1; }
 
-[ -z "$b" ] && b='testport ';
+[ -z "$b" ] && b='testport';
 
 testport "$1"

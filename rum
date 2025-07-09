@@ -23,7 +23,8 @@ EOF
 [ -n "${portsd##/*}" ] && portsd="${HOME}/$portsd"
 
 # current branch
-cb="$(git -C "$portsd" symbolic-ref --short HEAD)"
+#cb="$(git -C "$portsd" symbolic-ref --short HEAD)"
+cb="$(git -C "$portsd" branch --show-current)"
 
 if [ -z "$cb" ]; then
   printf "Could not determine the checked out git branch.\\n"

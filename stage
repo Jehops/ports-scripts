@@ -16,7 +16,11 @@ stage () {
   of=$(pkg info -oAq | \
           awk -F'[[:blank:]]*:[[:blank:]]*' \
             '/^(Origin|flavor)/ {
-             if ($1 == "Origin" && $2 != "base") { print $2 }
+             if ($1 == "Origin" &&
+                $2 !~ /^base\// &&
+                $2 != "compat/libraries" &&
+                $2 != "dns/dnsup")
+                   { print $2 }
              if ($1 == "flavor" && $2 != "default") { print "@"$2 }
           }')
   printf "%s\\n" "$of" | tr '\n' ' ' | sed 's/ @/@/g' | tr ' ' '\n' > "$listf"
